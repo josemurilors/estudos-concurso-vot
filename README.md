@@ -2,7 +2,7 @@
 
 Resumo
 - Prova interativa em HTML que carrega questões a partir de provas.json (via JSON).
-- Possui 34 questões reais já preenchidas e placeholders para as 66 restantes.
+- 34 questões reais já preenchidas e placeholders para as 66 restantes.
 - Front-end dinâmico: mostra explicação ao selecionar, navega entre perguntas e gera um relatório.
 
 Arquivos Principais
@@ -20,21 +20,25 @@ Estrutura de Perguntas (JSON)
 - tema: categoria (cisco, mikrotik, linux).
 
 Como Executar Localmente
-- Servir com Python (recomendado):
+- Sem Docker (teste rápido):
   - python -m http.server 8000
   - Acesse http://localhost:8000/
-- Ou use um servidor estático de sua preferência.
+- Com Docker Compose (recomendado para produção/local):
+  - Build: docker-compose build
+  - Run: docker-compose up -d
+  - Acesse: http://localhost:8080/
 
-Preenchimento das 66 Questões Adicionais
-- Opção A: preencher 35-100 dentro de provas.json no mesmo formato.
-- Opção B: usar provas_restantes.json e mesclar no carregamento.
-
-Notas
-- A arquitetura facilita adicionar conteúdo futuro sem mexer no front-end.
-- Posso fornecer scripts para gerar placeholders automaticamente se desejar.
+Dockerization com diretório externo (facilita edição de conteúdo)
+- Opcional: mapear um diretório externo com conteúdo do site para o contêiner nginx.
+- Estrutura sugerida de diretório externo: site/ (contém index.html, provas.json e provas_restantes.json).
+- Compose usa: ./site:/usr/share/nginx/html:ro para facilitar atualizações sem rebuild.
 
 Contribuição
 - Pull requests são bem-vindos.
 
 Licença
-- MIT (ou licença de sua escolha).
+- MIT (ou a licença de sua escolha).
+
+Notas rápidas
+- A abordagem com JSON facilita a expansão para as 100 questões sem mexer no frontend.
+- Se desejar, posso incluir scripts para gerar placeholders automaticamente.

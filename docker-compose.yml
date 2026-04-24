@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  provacache:
+    build: .
+    image: provas-prova:latest
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    # Map external site directory to nginx content root for easier edits without rebuild
+    volumes:
+      - ./site:/usr/share/nginx/html:ro
