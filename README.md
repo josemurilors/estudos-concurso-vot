@@ -2,43 +2,49 @@
 
 Resumo
 - Prova interativa em HTML que carrega questões a partir de provas.json (via JSON).
-- 34 questões reais já preenchidas e placeholders para as 66 restantes.
-- Front-end dinâmico: mostra explicação ao selecionar, navega entre perguntas e gera um relatório.
+- 100 questões totais (34 Cisco + 33 Mikrotik + 33 Linux).
+- Front-end dinâmico: mostra explicação ao selecionar, navega entre perguntas e gera relatório de desempenho por tema.
 
 Arquivos Principais
 - index.html: página que carrega questões via JSON.
-- provas.json: perguntas (34 reais + placeholders para 66).
-- provas_restantes.json (opcional): perguntas adicionais para mesclar.
-- assets/: conteúdo estático futuro.
+- provas.json: banco com as 100 questões.
+- Dockerfile / docker-compose.yml: configuração Docker com Nginx.
+- .dockerignore: arquivos ignorados no build.
 
 Estrutura de Perguntas (JSON)
 - id: identificador da pergunta.
-- enunciado: texto da questão (quebras de linha OK).
+- enunciado: texto da questão.
 - alts: array com 5 alternativas (A–E).
 - correta: índice da alternativa correta (0-4).
 - explicacao: explicação da resposta.
 - tema: categoria (cisco, mikrotik, linux).
 
 Como Executar Localmente
-- Sem Docker (teste rápido):
-  - python -m http.server 8000
-  - Acesse http://localhost:8000/
-- Com Docker Compose (recomendado para produção/local):
-  - Build: docker-compose build
-  - Run: docker-compose up -d
-  - Acesse: http://localhost:8080/
 
-Dockerization com diretório externo (facilita edição de conteúdo)
-- Opcional: mapear um diretório externo com conteúdo do site para o contêiner nginx.
-- Estrutura sugerida de diretório externo: site/ (contém index.html, provas.json e provas_restantes.json).
-- Compose usa: ./site:/usr/share/nginx/html:ro para facilitar atualizações sem rebuild.
+## Sem Servidor (teste rápido)
+```bash
+python -m http.server 8000
+```
+Acesse: http://localhost:8000
 
-Contribuição
-- Pull requests são bem-vindos.
+## Com Docker (recomendado)
+```bash
+docker-compose up -d
+```
+Acesse: http://localhost:8080
 
-Licença
-- MIT (ou a licença de sua escolha).
+## Com Flask (opcional)
+```bash
+python app.py
+```
+Acesse: http://localhost:5000
 
-Notas rápidas
-- A abordagem com JSON facilita a expansão para as 100 questões sem mexer no frontend.
-- Se desejar, posso incluir scripts para gerar placeholders automaticamente.
+Docker
+- Build: `docker build -t provas-prova:latest .`
+- Run: `docker run -d -p 8080:80 provas-prova:latest`
+- Compose: `docker-compose up -d`
+
+Notas
+- O JSON contém 100 questões válidas prontas para uso.
+- A arsitea com JSON permite fácil atualização de conteúdo sem mexer no frontend.
+- Para adicionar novas questões, edite provas.json mantendo a mesma estrutura.
