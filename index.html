@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>Prova Cisco/Mikrotik/Linux - Carregada via JSON</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{ --bg:#f6f7fb; --card:#fff; --border:#e5e7eb; --text:#111; --accent:#1e3a8a; --green:#1b9e5a; --red:#d93025; }
+    *{box-sizing:border-box}
+    body{ margin:0; font-family:Arial, sans-serif; background:var(--bg); color:var(--text); }
+    .wrap{ max-width:980px; margin:24px auto; padding:0 16px; }
+    header{ text-align:center; padding:8px 0 16px; }
+    h1{ margin:0; font-size:22px; }
+    section.quiz{ background:var(--card); border:1px solid var(--border); border-radius:8px; padding:16px; }
+    .quest{ font-weight:600; margin:6px 0 8px; }
+    .enunciado{ line-height:1.4; white-space:pre-wrap; margin-bottom:8px; }
+    .choices{ list-style:none; padding:0; margin:0; }
+    .choices li{ margin:8px 0; }
+    .opt{ display:flex; align-items:center; padding:8px 12px; border:1px solid var(--border); border-radius:6px; cursor:pointer; background:#fff; }
+    .opt input{ margin-right:10px; }
+    .exp{ background:#f8f9ff; border-left:4px solid var(--accent); padding:8px 12px; display:none; margin-top:8px; }
+    .exp.show{ display:block; }
+    .row{ display:flex; justify-content:space-between; gap:8px; align-items:center; }
+    button{ padding:10px 14px; border-radius:6px; border:1px solid #bbb; background:#fff; cursor:pointer; }
+    button[disabled]{opacity:.5; cursor:not-allowed}
+    #report{ display:none; margin-top:16px; padding:16px; background:#fff; border:1px solid var(--border); border-radius:8px; }
+    table{ width:100%; border-collapse:collapse; }
+    th, td{ border:1px solid #ddd; padding:6px 8px; text-align:left; }
+    @media (max-width: 700px){ .wrap{ margin:12px auto; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Prova – Cisco IOS, Mikrotik/RouterOS e GNU/Linux (34 questões demonstrativas)</h1>
+      <div id="progress" aria-live="polite" style="margin-top:6px; color:#555;">Questão 1 de 34</div>
+    </header>
+
+    <section class="quiz" id="quiz-area" aria-label="Área de questões">
+      <!-- Conteúdo preenchido dinamicamente com JavaScript -->
+    </section>
+
+    <div class="row" style="margin:12px 0;">
+      <button id="btnPrev" disabled>Anterior</button>
+      <button id="btnSkip">Pular</button>
+      <button id="btnNext">Próximo</button>
+    </div>
+
+    <section id="report" aria-label="Relatório final">
+      <h2>Relatório de Desempenho</h2>
+      <div id="summary"></div>
+      <h3>Desempenho por Tema</h3>
+      <div id="perTema"></div>
+    </section>
+  </div>
+
+  <script>
+    // Carrega as questões de provas.json (34 já preenchidas; 66 futuras via JSON externo)
+    let questions = [];
+    let current = 0;
+    let selections = [];
+    let loaded = false;
+
+    async function loadQuestions() {
+      try {
+        const resp = await fetch('provas.json');
+        if (resp.ok) {
+          const data = await resp.json();
+          questions = data && Array.isArray(data) ? data : [];
+          selections = new Array(questions.length).fill(null);
+          loaded = true;
+          renderQuestion(0);
+          return;
+        }
+      } catch (e) {
+        // fallback: se falhar, nenhuma ação
+      }
+      // fallback mínimo se não houver JSON
+      questions = [];
+      selections = [];
+      document.getElementById('quiz-area').innerHTML = '<p>Nenhuma pergunta carregada.</p>';
+    }
+
+    function renderQuestion(index){
+      const q = questions[index];
+      const area = document.getElementById('quiz-area');
+      area.innerHTML = '';
+      if (!q){
+        area.innerHTML = '<p>Conteúdo não disponível.</p>';
+        return;
+      }
+      const wrap = document.createElement('div');
+      wrap.innerHTML = `<div class="quest">Questão ${q.id}:</div>`;
+      const en = document.createElement('div'); en.className = 'enunciado'; en.innerText = q.enunciado;
+      wrap.appendChild(en);
+
+      const ol = document.createElement('ol'); ol.className = 'choices';
+      q.alts.forEach((alt, idx)=>{
+        const li = document.createElement('li');
+        const label = document.createElement('label'); label.className = 'opt';
+        const r = document.createElement('input'); r.type = 'radio'; r.name = `q${q.id}`; r.value = idx;
+        r.onclick = () => handleAnswer(index, idx);
+        label.appendChild(r);
+        const txt = document.createElement('span'); txt.textContent = `(${String.fromCharCode(65+idx)}) ${alt}`;
+        label.appendChild(txt);
+        li.appendChild(label);
+        ol.appendChild(li);
+      });
+      const explicacao = document.createElement('div'); explicacao.className = 'exp'; explicacao.id = `exp-${q.id}`; explicacao.innerHTML = `<strong>Explicação:</strong> ${q.explicacao}`;
+      const container = document.createElement('div'); container.style.marginTop = '6px'; container.appendChild(ol); container.appendChild(explicacao);
+      area.appendChild(wrap);
+      area.appendChild(container);
+
+      // atualizado progress
+      document.getElementById('progress').textContent = `Questão ${index+1} de ${questions.length}`;
+      // botões
+      document.getElementById('btnPrev').disabled = index === 0;
+      document.getElementById('btnNext').textContent = (index === questions.length - 1) ? 'Ver relatório' : 'Próximo';
+    }
+
+    function handleAnswer(qIndex, chosenIdx){
+      const q = questions[qIndex];
+      selections[qIndex] = chosenIdx;
+      const exp = document.getElementById(`exp-${q.id}`);
+      exp.classList.add('show');
+      // highlight correta/errada visualmente
+      const radios = document.querySelectorAll(`input[name="q${q.id}"]`);
+      radios.forEach((inp, idx)=>{
+        const label = inp.parentElement;
+        if (idx === q.correta){ label.style.borderColor = '#2e7d32'; label.style.background = '#e8f7e8'; }
+        if (idx === chosenIdx && idx !== q.correta){ label.style.borderColor = '#c62828'; label.style.background = '#ffe7e7'; }
+      });
+    }
+
+    function showReport(){
+      // score
+      let correto = 0;
+      for (let i = 0; i < questions.length; i++){
+        if (typeof selections[i] === 'number' && selections[i] === questions[i].correta) correto++;
+      }
+      const total = questions.length;
+      const summary = document.getElementById('summary');
+      summary.innerHTML = `<p>Você acertou ${correto} de ${total} questões. (Pontuação: ${Math.round((correto/total)*100)}%)</p>`;
+      // per-theme
+      const temas = Array.from(new Set(questions.map(q => q.tema)));
+      let rows = temas.map(t => {
+        const totalTema = questions.filter(q => q.tema === t).length;
+        const acertos = questions.filter((q, idx) => q.tema === t && selections[idx] === q.correta).length;
+        return {tema: t, total: totalTema, acertos};
+      });
+      let tbl = '<table><thead><tr><th>Tema</th><th>Total</th><th>Aciertos</th><th>Acurácia</th></tr></thead><tbody>';
+      rows.forEach(r => {
+        const acc = r.acertos ? Math.round((r.acertos / r.total) * 100) : 0;
+        tbl += `<tr><td>${r.tema}</td><td>${r.total}</td><td>${r.acertos}</td><td>${acc}%</td></tr>`;
+      });
+      tbl += '</tbody></table>';
+      document.getElementById('perTema').innerHTML = tbl;
+      document.getElementById('report').style.display = 'block';
+      document.getElementById('quiz-area').style.display = 'none';
+      document.getElementById('btnPrev').style.display = 'none';
+      document.getElementById('btnNext').style.display = 'none';
+      document.getElementById('btnSkip').style.display = 'none';
+    }
+
+    // navegação
+    document.getElementById('btnNext').addEventListener('click', () => {
+      if (current < questions.length - 1){
+        current++; renderQuestion(current);
+      } else {
+        showReport();
+      }
+    });
+    document.getElementById('btnPrev').addEventListener('click', () => {
+      if (current > 0){ current--; renderQuestion(current); }
+    });
+    document.getElementById('btnSkip').addEventListener('click', () => {
+      if (current < questions.length - 1){ current++; renderQuestion(current); } else { showReport(); }
+    });
+
+    // inicialização
+    loadQuestions();
+  </script>
+  
+</body>
+</html>
