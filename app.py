@@ -14,6 +14,28 @@ app.config.update(
     SESSION_COOKIE_SECURE=False,
 )
 
+SENSITIVE_PATHS = ('/login', '/cadastro', '/quiz', '/relatorio', '/api/', '/logout', '/resetar')
+
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '0'
+    response.headers['Referrer-Policy'] = 'no-referrer'
+    response.headers['Content-Security-Policy'] = "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self'"
+    if request.scheme == 'https' or request.headers.get('X-Forwarded-Proto') == 'https':
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+
+    if any(request.path.startswith(p) for p in SENSITIVE_PATHS):
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+
+    if response.headers.get('Server'):
+        del response.headers['Server']
+
+    return response
+
 limiter = MemoryRateLimiter()
 
 QUESTIONS_PATH = os.path.join(os.path.dirname(__file__), 'provas.json')
