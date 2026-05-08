@@ -1,14 +1,61 @@
 import sqlite3
 import os
+import atexit
+from cryptography.fernet import Fernet
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'database.db')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.environ.get('DATA_DIR', BASE_DIR)
+DB_PATH = os.path.join(DATA_DIR, 'database.db')
+ENC_PATH = os.path.join(DATA_DIR, 'database.enc')
+KEY_PATH = os.path.join(DATA_DIR, 'db.key')
+
+_fernet = None
+
+def _get_key():
+    env_key = os.environ.get('DB_KEY')
+    if env_key:
+        return env_key.encode() if isinstance(env_key, str) else env_key
+    if os.path.exists(KEY_PATH):
+        with open(KEY_PATH, 'rb') as f:
+            return f.read()
+    key = Fernet.generate_key()
+    with open(KEY_PATH, 'wb') as f:
+        f.write(key)
+    return key
+
+def _get_fernet():
+    global _fernet
+    if _fernet is None:
+        _fernet = Fernet(_get_key())
+    return _fernet
+
+def decrypt_db():
+    if not os.path.exists(ENC_PATH):
+        return
+    f = _get_fernet()
+    with open(ENC_PATH, 'rb') as src:
+        data = f.decrypt(src.read())
+    with open(DB_PATH, 'wb') as dst:
+        dst.write(data)
+
+def encrypt_db():
+    if not os.path.exists(DB_PATH):
+        return
+    f = _get_fernet()
+    with open(DB_PATH, 'rb') as src:
+        data = f.encrypt(src.read())
+    with open(ENC_PATH, 'wb') as dst:
+        dst.write(data)
+    os.remove(DB_PATH)
 
 def get_conn():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+    conn.execute('PRAGMA journal_mode=WAL')
     return conn
 
 def init_db():
+    decrypt_db()
     conn = get_conn()
     c = conn.cursor()
     c.execute('''
@@ -31,6 +78,7 @@ def init_db():
     ''')
     conn.commit()
     conn.close()
+    atexit.register(encrypt_db)
 
 def criar_usuario(username, password_hash):
     conn = get_conn()

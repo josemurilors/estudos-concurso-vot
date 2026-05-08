@@ -7,4 +7,6 @@ __pycache__
 *.backup
 .DS_Store
 database.db
+database.enc
+db.key
 cookies.txt

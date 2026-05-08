@@ -3,9 +3,13 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 import database as db
+from token_bucket import MemoryRateLimiter
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = os.environ.get('SECRET_KEY', os.urandom(24).hex())
+DEBUG = os.environ.get('FLASK_DEBUG', '0') == '1'
+
+limiter = MemoryRateLimiter()
 
 QUESTIONS_PATH = os.path.join(os.path.dirname(__file__), 'provas.json')
 db.init_db()
@@ -13,6 +17,16 @@ db.init_db()
 def load_questions():
     with open(QUESTIONS_PATH, encoding='utf-8') as f:
         return json.load(f)
+
+def get_client_ip():
+    return request.remote_addr or 'unknown'
+
+def taxa_limite(endpoint, max_tokens=5, period_secs=60):
+    ip = get_client_ip()
+    key = f'{endpoint}:{ip}'
+    rate = max_tokens / period_secs
+    bucket = limiter.get_bucket(key, rate=rate, capacity=max_tokens)
+    return bucket.consume(1)
 
 @app.route('/')
 def index():
@@ -23,6 +37,8 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+        if not taxa_limite('login'):
+            return render_template('login.html', erro='Muitas tentativas. Aguarde 1 minuto.')
         username = request.form['username'].strip()
         password = request.form['password']
         user = db.buscar_usuario(username)
@@ -36,6 +52,8 @@ def login():
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
+        if not taxa_limite('cadastro'):
+            return render_template('cadastro.html', erro='Muitas tentativas. Aguarde 1 minuto.')
         username = request.form['username'].strip()
         password = request.form['password']
         if not username or not password:
@@ -61,8 +79,12 @@ def responder():
     if 'user_id' not in session:
         return jsonify({'erro': 'Não autenticado'}), 401
     data = request.get_json()
-    questao_id = data['questao_id']
-    resposta_escolhida = data['resposta']
+    if not data:
+        return jsonify({'erro': 'JSON inválido'}), 400
+    questao_id = data.get('questao_id')
+    resposta_escolhida = data.get('resposta')
+    if questao_id is None or resposta_escolhida is None:
+        return jsonify({'erro': 'Dados incompletos'}), 400
     perguntas = load_questions()
     questao = next((q for q in perguntas if q['id'] == questao_id), None)
     if not questao:
@@ -104,4 +126,4 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=DEBUG)

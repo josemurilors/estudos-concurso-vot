@@ -78,11 +78,15 @@ function responder(el, questaoId, resposta) {
   })
   .then(r => r.json())
   .then(data => {
-    if (data.acertou) {
-      fb.innerHTML = '<span class="correto">Correto!</span><div class="explicacao">' + data.explicacao + '</div>';
-    } else {
-      fb.innerHTML = '<span class="incorreto">Errado! Resposta correta: ' + (data.resposta_correta + 1) + '</span><div class="explicacao">' + data.explicacao + '</div>';
-    }
+    fb.innerHTML = '';
+    const status = document.createElement('span');
+    status.className = data.acertou ? 'correto' : 'incorreto';
+    status.textContent = data.acertou ? 'Correto!' : 'Errado! Resposta correta: ' + (data.resposta_correta + 1);
+    fb.appendChild(status);
+    const exp = document.createElement('div');
+    exp.className = 'explicacao';
+    exp.textContent = data.explicacao;
+    fb.appendChild(exp);
     atualizarProgresso();
   });
 }
