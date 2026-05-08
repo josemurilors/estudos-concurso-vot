@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Redefinir Senha - Quiz Concurso</title>
+<title>Redefinir Senha — Quiz Interativo</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 <div class="container">
   <div class="card">
+    <img src="{{ url_for('static', filename='logo.svg') }}" alt="Logo" class="logo">
     <h1>Nova Senha</h1>
     {% if erro %}
     <div class="erro">{{ erro }}</div>
