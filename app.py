@@ -8,6 +8,11 @@ from token_bucket import MemoryRateLimiter
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', os.urandom(24).hex())
 DEBUG = os.environ.get('FLASK_DEBUG', '0') == '1'
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    SESSION_COOKIE_SECURE=False,
+)
 
 limiter = MemoryRateLimiter()
 
@@ -72,7 +77,12 @@ def quiz():
         return redirect(url_for('login'))
     perguntas = load_questions()
     respostas = db.get_respostas(session['user_id'])
-    return render_template('quiz.html', perguntas=perguntas, respostas=respostas, username=session['username'])
+    perguntas_seguras = []
+    for q in perguntas:
+        qs = dict(q)
+        qs.pop('correta', None)
+        perguntas_seguras.append(qs)
+    return render_template('quiz.html', perguntas=perguntas_seguras, respostas=respostas, username=session['username'])
 
 @app.route('/api/responder', methods=['POST'])
 def responder():
@@ -119,6 +129,41 @@ def limpar():
         return jsonify({'erro': 'Não autenticado'}), 401
     db.limpar_respostas(session['user_id'])
     return jsonify({'ok': True})
+
+import secrets
+import time
+
+@app.route('/resetar', methods=['GET', 'POST'])
+def reset_solicitar():
+    if request.method == 'POST':
+        if not taxa_limite('reset'):
+            return render_template('reset_solicitar.html', erro='Muitas tentativas. Aguarde 1 minuto.')
+        username = request.form['username'].strip()
+        user = db.buscar_usuario(username)
+        if user:
+            token = secrets.token_urlsafe(32)
+            db.salvar_reset_token(user['id'], token)
+            return render_template('reset_solicitar.html', token=token, username=username)
+        return render_template('reset_solicitar.html', erro='Usuário não encontrado')
+    return render_template('reset_solicitar.html')
+
+@app.route('/resetar/<token>', methods=['GET', 'POST'])
+def reset_confirmar(token):
+    if request.method == 'POST':
+        username = request.form['username'].strip()
+        password = request.form['password']
+        if not password:
+            return render_template('reset_confirmar.html', token=token, erro='Informe a nova senha')
+        user = db.buscar_usuario(username)
+        if not user:
+            return render_template('reset_confirmar.html', token=token, erro='Usuário não encontrado')
+        stored = db.buscar_reset_token(user['id'], token)
+        if not stored:
+            return render_template('reset_confirmar.html', token=token, erro='Token inválido ou expirado')
+        db.atualizar_senha(user['id'], generate_password_hash(password))
+        db.deletar_reset_token(user['id'])
+        return redirect(url_for('login'))
+    return render_template('reset_confirmar.html', token=token)
 
 @app.route('/logout')
 def logout():

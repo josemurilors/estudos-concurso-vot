@@ -23,7 +23,7 @@
   </div>
   <div id="quiz">
     {% for q in perguntas %}
-    <div class="questao" data-id="{{ q['id'] }}" data-correta="{{ q['correta'] }}">
+    <div class="questao" data-id="{{ q['id'] }}">
       <div class="enunciado">{{ q['id'] }}. {{ q['enunciado'] }}</div>
       <div class="alternativas">
         {% for i in range(q['alts']|length) %}
@@ -40,9 +40,8 @@
         {% set resp = respostas.get(q['id'], {}) %}
         {% if resp %}
         <span class="{% if resp['acertou'] %}correto{% else %}incorreto{% endif %}">
-          {% if resp['acertou'] %}Correto!{% else %}Errado! Resposta correta: {{ q['correta'] + 1 }}{% endif %}
+          {% if resp['acertou'] %}Correto!{% else %}Errado!{% endif %}
         </span>
-        <div class="explicacao">{{ q['explicacao'] }}</div>
         {% endif %}
       </div>
     </div>
@@ -52,7 +51,6 @@
 <script>
 function responder(el, questaoId, resposta) {
   const questao = el.closest('.questao');
-  const correta = parseInt(questao.dataset.correta);
   if (el.checked && el.dataset.prev === 'true') {
     el.checked = false;
     el.dataset.prev = 'false';

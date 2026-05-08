@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resetar Senha - Quiz Concurso</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <h1>Resetar Senha</h1>
+    {% if erro %}
+    <div class="erro">{{ erro }}</div>
+    {% endif %}
+    {% if token %}
+    <p style="text-align:center;margin-bottom:15px;color:#38bdf8;">
+      Token gerado: <code style="word-break:break-all;font-size:0.85rem">{{ token }}</code>
+    </p>
+    <p class="link">
+      <a href="{{ url_for('reset_confirmar', token=token) }}">Clique aqui para redefinir a senha</a>
+    </p>
+    {% else %}
+    <form method="POST">
+      <input type="text" name="username" placeholder="Nome de usuário" required>
+      <button type="submit">Gerar Token</button>
+    </form>
+    {% endif %}
+    <p class="link"><a href="{{ url_for('login') }}">Voltar ao login</a></p>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redefinir Senha - Quiz Concurso</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <h1>Nova Senha</h1>
+    {% if erro %}
+    <div class="erro">{{ erro }}</div>
+    {% endif %}
+    <form method="POST">
+      <input type="text" name="username" placeholder="Nome de usuário" required>
+      <input type="password" name="password" placeholder="Nova senha" required>
+      <button type="submit">Redefinir</button>
+    </form>
+    <p class="link"><a href="{{ url_for('login') }}">Voltar ao login</a></p>
+  </div>
+</div>
+</body>
+</html>

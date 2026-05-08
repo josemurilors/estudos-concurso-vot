@@ -2,6 +2,8 @@
 
 Site de quiz com 100 questões de TI (Cisco, Mikrotik e Linux), autenticação de usuário, persistência de respostas e relatório de desempenho.
 
+> **⚠️ Importante:** Este app foi projetado para ambiente local / estudos. Em produção, utilize um **reverse proxy** (nginx, Caddy) para terminar **HTTPS** e redefina `SESSION_COOKIE_SECURE=True` no `app.py`.
+
 ## Funcionalidades
 
 - Login e cadastro de usuário
@@ -58,11 +60,19 @@ Acesse: http://localhost:5000
 
 ## Segurança
 
-- **Senhas** armazenadas com hash pbkdf2:sha256 (werkzeug)
-- **Banco criptografado** em disco via Fernet (AES-128-CBC com HMAC)
-- **Rate limiting** via token bucket: 5 tentativas/minuto por IP no login/cadastro
-- **XSS** prevenido: explicações são inseridas via `textContent` (DOM puro)
-- **SQL Injection** prevenido: todas queries usam placeholders (`?`)
+| Prática | Status |
+|---|---|
+| **Senhas hasheadas** (pbkdf2:sha256 via werkzeug) | ✅ |
+| **Banco criptografado em repouso** (Fernet AES-128-CBC) | ✅ |
+| **Não expõe resposta correta ao cliente** — `correta` removido do template HTML | ✅ |
+| **Rate limiting** (token bucket, 5/min por IP no login/cadastro/reset) | ✅ |
+| **Reset de senha** com token único de 32 bytes (expira em 1h) | ✅ |
+| **Cookies HttpOnly + SameSite=Lax** — impede acesso via JS e CSRF em formulários | ✅ |
+| **Logout limpa a sessão** (`session.clear()` redefine o cookie) | ✅ |
+| **XSS prevenido** — `textContent` em vez de `innerHTML` nas explicações | ✅ |
+| **SQL Injection prevenido** — todas queries usam placeholders (`?`) | ✅ |
+| **HTTPS** | ⚠️ Não nativo. Use reverse proxy (Caddy/nginx) em produção |
+| **Senha forte** | ❌ Não há validação de força. Usuário pode criar senha fraca |
 
 ## Estrutura do Projeto
 

@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import time
 import atexit
 from cryptography.fernet import Fernet
 
@@ -122,6 +123,44 @@ def deletar_resposta(user_id, questao_id):
 def limpar_respostas(user_id):
     conn = get_conn()
     conn.execute('DELETE FROM respostas WHERE user_id = ?', (user_id,))
+    conn.commit()
+    conn.close()
+
+def salvar_reset_token(user_id, token, expira_em=3600):
+    conn = get_conn()
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS reset_tokens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            token TEXT NOT NULL,
+            expira INTEGER NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    ''')
+    conn.execute('DELETE FROM reset_tokens WHERE user_id = ?', (user_id,))
+    conn.execute('INSERT INTO reset_tokens (user_id, token, expira) VALUES (?, ?, ?)',
+                 (user_id, token, int(time.time()) + expira_em))
+    conn.commit()
+    conn.close()
+
+def buscar_reset_token(user_id, token):
+    conn = get_conn()
+    row = conn.execute(
+        'SELECT * FROM reset_tokens WHERE user_id = ? AND token = ? AND expira > ?',
+        (user_id, token, int(time.time()))
+    ).fetchone()
+    conn.close()
+    return row
+
+def deletar_reset_token(user_id):
+    conn = get_conn()
+    conn.execute('DELETE FROM reset_tokens WHERE user_id = ?', (user_id,))
+    conn.commit()
+    conn.close()
+
+def atualizar_senha(user_id, password_hash):
+    conn = get_conn()
+    conn.execute('UPDATE users SET password_hash = ? WHERE id = ?', (password_hash, user_id))
     conn.commit()
     conn.close()
 
