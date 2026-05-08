@@ -7,11 +7,15 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+<div class="topbar">
+  <a href="{{ url_for('login') }}" class="topbar-logo">
+    <img src="{{ url_for('static', filename='logo.svg') }}" alt="">
+    <span>Quiz Interativo</span>
+  </a>
+</div>
 <div class="container">
   <div class="card">
-    <img src="{{ url_for('static', filename='logo.svg') }}" alt="Logo" class="logo">
-    <h1>Quiz Interativo</h1>
-    <p style="text-align:center;color:#64748b;margin-bottom:20px;font-size:0.85rem">Cisco / Mikrotik / Linux</p>
+    <h1>Entrar</h1>
     {% if erro %}
     <div class="erro">{{ erro }}</div>
     {% endif %}
@@ -23,6 +27,10 @@
     <p class="link">Não tem conta? <a href="{{ url_for('cadastro') }}">Cadastre-se</a></p>
     <p class="link" style="margin-top:5px"><a href="{{ url_for('reset_solicitar') }}">Esqueci minha senha</a></p>
   </div>
+</div>
+<div class="footer">
+  <p>Feito com <span class="heart">&lt;3</span> (e Linux) por Jrockets</p>
+  <p>&copy; 2026 Todos os direitos reservados</p>
 </div>
 </body>
 </html>

@@ -3,20 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiz - {{ username }}</title>
+<title>Quiz — {{ username }}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <h1><img src="{{ url_for('static', filename='logo.svg') }}" alt="Logo" class="logo-sm">Quiz Interativo — Cisco / Mikrotik / Linux</h1>
-    <div class="user-info">
-      <span>{{ username }}</span>
-      <a href="{{ url_for('relatorio') }}" class="btn">Relatório</a>
-      <a href="{{ url_for('logout') }}" class="btn">Sair</a>
-    </div>
+<div class="topbar">
+  <a href="{{ url_for('quiz') }}" class="topbar-logo">
+    <img src="{{ url_for('static', filename='logo.svg') }}" alt="">
+    <span>Quiz Interativo</span>
+  </a>
+  <div class="user-info">
+    <span>{{ username }}</span>
+    <a href="{{ url_for('relatorio') }}" class="btn">Relatório</a>
+    <a href="{{ url_for('logout') }}" class="btn">Sair</a>
   </div>
-    <div class="progresso">
+</div>
+<div class="container">
+  <div class="progresso">
     Respondidas: <span id="respondidas">{{ respostas|length }}</span> / {{ perguntas|length }}
     <span id="texto-progresso"></span>
     <button class="btn-limpar" onclick="limparRespostas()">Limpar Respostas</button>
@@ -47,6 +50,10 @@
     </div>
     {% endfor %}
   </div>
+</div>
+<div class="footer">
+  <p>Feito com <span class="heart">&lt;3</span> (e Linux) por Jrockets</p>
+  <p>&copy; 2026 Todos os direitos reservados</p>
 </div>
 <script>
 function responder(el, questaoId, resposta) {

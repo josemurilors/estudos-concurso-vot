@@ -3,19 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Relatório - {{ username }}</title>
+<title>Relatório — {{ username }}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <h1><img src="{{ url_for('static', filename='logo.svg') }}" alt="Logo" class="logo-sm">Relatório</h1>
-    <div class="user-info">
-      <span>{{ username }}</span>
-      <a href="{{ url_for('quiz') }}" class="btn">Voltar ao Quiz</a>
-      <a href="{{ url_for('logout') }}" class="btn">Sair</a>
-    </div>
+<div class="topbar">
+  <a href="{{ url_for('quiz') }}" class="topbar-logo">
+    <img src="{{ url_for('static', filename='logo.svg') }}" alt="">
+    <span>Quiz Interativo</span>
+  </a>
+  <div class="user-info">
+    <span>{{ username }}</span>
+    <a href="{{ url_for('quiz') }}" class="btn">Voltar</a>
+    <a href="{{ url_for('logout') }}" class="btn">Sair</a>
   </div>
+</div>
+<div class="container">
   <div class="card resumo">
     <h2>Desempenho</h2>
     <p>Acertos: <strong>{{ acertos }}</strong> de <strong>{{ total }}</strong>
@@ -49,6 +52,10 @@
     <p class="vazio">Nenhuma questão respondida ainda. <a href="{{ url_for('quiz') }}">Ir para o quiz</a></p>
     {% endfor %}
   </div>
+</div>
+<div class="footer">
+  <p>Feito com <span class="heart">&lt;3</span> (e Linux) por Jrockets</p>
+  <p>&copy; 2026 Todos os direitos reservados</p>
 </div>
 </body>
 </html>
