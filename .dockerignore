@@ -6,3 +6,5 @@ __pycache__
 *.log
 *.backup
 .DS_Store
+database.db
+cookies.txt

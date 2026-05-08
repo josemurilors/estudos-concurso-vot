@@ -1,0 +1,87 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #000;
+  color: #e2e8f0;
+  min-height: 100vh;
+}
+.container { max-width: 800px; margin: 0 auto; padding: 20px; }
+.header {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 10px;
+  margin-bottom: 20px; padding-bottom: 15px;
+  border-bottom: 1px solid #1a1a1a;
+}
+.header h1 { font-size: 1.3rem; color: #38bdf8; }
+.user-info { display: flex; align-items: center; gap: 10px; }
+.user-info span { color: #64748b; }
+.card {
+  background: #0a0a0a; border-radius: 8px; padding: 25px;
+  margin-bottom: 20px; border: 1px solid #1a1a1a;
+}
+.card h1 { text-align: center; margin-bottom: 20px; color: #38bdf8; }
+.progresso {
+  text-align: center; margin-bottom: 15px; color: #64748b;
+  font-size: 0.9rem;
+}
+.questao {
+  background: #0a0a0a; border-radius: 8px; padding: 20px;
+  margin-bottom: 15px; border: 1px solid #1a1a1a;
+}
+.questao.correta { border-color: #22c55e; }
+.questao.errada { border-color: #ef4444; }
+.enunciado {
+  font-size: 1rem; margin-bottom: 12px; line-height: 1.5;
+}
+.alternativas { display: flex; flex-direction: column; gap: 6px; }
+.alternativa {
+  display: block; padding: 10px 14px; border-radius: 6px;
+  cursor: pointer; border: 1px solid #1a1a1a; transition: 0.2s;
+  background: #000; line-height: 1.4;
+}
+.alternativa:hover { border-color: #38bdf8; background: #0a0a0a; }
+.alternativa.selecionada { border-color: #38bdf8; background: #0a0a1a; }
+.alternativa.correta { border-color: #22c55e; background: #001a00; }
+.alternativa input { display: none; }
+.feedback { margin-top: 8px; font-size: 0.9rem; }
+.correto { color: #22c55e; font-weight: bold; }
+.incorreto { color: #ef4444; }
+.marca-correto { color: #22c55e; margin-left: 6px; }
+.marca-errado { color: #ef4444; margin-left: 6px; }
+.resumo { text-align: center; }
+.resumo h2 { color: #38bdf8; margin-bottom: 8px; }
+.resumo strong { color: #facc15; }
+.btn, button, .link a {
+  display: inline-block; padding: 8px 16px; border-radius: 6px;
+  text-decoration: none; transition: 0.2s; border: none; cursor: pointer;
+  font-size: 0.9rem;
+}
+button, .btn {
+  background: #38bdf8; color: #000; font-weight: 600;
+}
+button:hover, .btn:hover { background: #7dd3fc; }
+.link { text-align: center; margin-top: 15px; color: #64748b; }
+.link a { padding: 0; background: none; color: #38bdf8; }
+.erro {
+  background: #1a0000; border: 1px solid #ef4444; color: #fca5a5;
+  padding: 10px; border-radius: 6px; margin-bottom: 15px; text-align: center;
+}
+input[type="text"], input[type="password"] {
+  width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 6px;
+  border: 1px solid #1a1a1a; background: #000; color: #e2e8f0;
+  font-size: 1rem; outline: none;
+}
+input:focus { border-color: #38bdf8; }
+form button { width: 100%; padding: 12px; font-size: 1rem; }
+.explicacao {
+  margin-top: 6px; font-size: 0.85rem; color: #64748b;
+  padding: 8px 12px; background: #000; border-radius: 6px;
+  border-left: 3px solid #38bdf8;
+}
+.btn-limpar {
+  background: transparent; color: #ef4444; border: 1px solid #ef4444;
+  padding: 4px 12px; font-size: 0.8rem; margin-left: 10px;
+}
+.btn-limpar:hover { background: #1a0000; }
+.vazio { text-align: center; padding: 40px; color: #64748b; }
+.vazio a { color: #38bdf8; }

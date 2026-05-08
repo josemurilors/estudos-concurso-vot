@@ -1,11 +1,12 @@
-version: '3.8'
 services:
-  provacache:
+  quiz:
     build: .
-    image: provas-prova:latest
+    image: quiz-concurso:latest
     ports:
-      - "8080:80"
+      - "5000:5000"
     restart: unless-stopped
-    # Map external site directory to nginx content root for easier edits without rebuild
     volumes:
-      - ./site:/usr/share/nginx/html:ro
+      - quiz_data:/app/database.db
+
+volumes:
+  quiz_data:

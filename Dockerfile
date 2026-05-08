@@ -1,10 +1,12 @@
-FROM nginx:alpine
+FROM python:3.12-slim
 
-# Copy static site assets
-COPY index.html /usr/share/nginx/html/index.html
-COPY provas.json /usr/share/nginx/html/provas.json
-COPY provas_restantes.json /usr/share/nginx/html/provas_restantes.json
+WORKDIR /app
 
-EXPOSE 80
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["nginx", "-g", "daemon off;"]
+COPY . .
+
+EXPOSE 5000
+
+CMD ["python", "app.py"]

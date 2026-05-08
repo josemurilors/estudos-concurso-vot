@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz - {{ username }}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Quiz Concurso</h1>
+    <div class="user-info">
+      <span>{{ username }}</span>
+      <a href="{{ url_for('relatorio') }}" class="btn">Relatório</a>
+      <a href="{{ url_for('logout') }}" class="btn">Sair</a>
+    </div>
+  </div>
+    <div class="progresso">
+    Respondidas: <span id="respondidas">{{ respostas|length }}</span> / {{ perguntas|length }}
+    <span id="texto-progresso"></span>
+    <button class="btn-limpar" onclick="limparRespostas()">Limpar Respostas</button>
+  </div>
+  <div id="quiz">
+    {% for q in perguntas %}
+    <div class="questao" data-id="{{ q['id'] }}" data-correta="{{ q['correta'] }}">
+      <div class="enunciado">{{ q['id'] }}. {{ q['enunciado'] }}</div>
+      <div class="alternativas">
+        {% for i in range(q['alts']|length) %}
+        {% set sel = respostas.get(q['id'], {}).get('resposta_escolhida') == i %}
+        <label class="alternativa{% if sel %} selecionada{% endif %}">
+          <input type="radio" name="q{{ q['id'] }}" value="{{ i }}"
+                 onclick="responder(this, {{ q['id'] }}, {{ i }})"
+                 {% if sel %}checked{% endif %}>
+          <span>{{ q['alts'][i] }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      <div class="feedback" id="feedback-{{ q['id'] }}">
+        {% set resp = respostas.get(q['id'], {}) %}
+        {% if resp %}
+        <span class="{% if resp['acertou'] %}correto{% else %}incorreto{% endif %}">
+          {% if resp['acertou'] %}Correto!{% else %}Errado! Resposta correta: {{ q['correta'] + 1 }}{% endif %}
+        </span>
+        <div class="explicacao">{{ q['explicacao'] }}</div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+<script>
+function responder(el, questaoId, resposta) {
+  const questao = el.closest('.questao');
+  const correta = parseInt(questao.dataset.correta);
+  if (el.checked && el.dataset.prev === 'true') {
+    el.checked = false;
+    el.dataset.prev = 'false';
+    questao.querySelectorAll('.alternativa').forEach(l => l.classList.remove('selecionada'));
+    fetch('{{ url_for("responder") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ questao_id: questaoId, resposta: -1 })
+    });
+    document.getElementById('feedback-' + questaoId).innerHTML = '';
+    atualizarProgresso();
+    return;
+  }
+  if (!el.checked) return;
+  questao.querySelectorAll('.alternativa').forEach(l => l.classList.remove('selecionada'));
+  el.closest('.alternativa').classList.add('selecionada');
+  document.querySelectorAll(`[name="q${questaoId}"]`).forEach(r => r.dataset.prev = r.checked ? 'true' : 'false');
+  const fb = document.getElementById('feedback-' + questaoId);
+  fetch('{{ url_for("responder") }}', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ questao_id: questaoId, resposta: resposta })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.acertou) {
+      fb.innerHTML = '<span class="correto">Correto!</span><div class="explicacao">' + data.explicacao + '</div>';
+    } else {
+      fb.innerHTML = '<span class="incorreto">Errado! Resposta correta: ' + (data.resposta_correta + 1) + '</span><div class="explicacao">' + data.explicacao + '</div>';
+    }
+    atualizarProgresso();
+  });
+}
+function atualizarProgresso() {
+  const total = document.querySelectorAll('.questao').length;
+  const feitas = document.querySelectorAll('.alternativa.selecionada').length;
+  document.getElementById('respondidas').textContent = feitas;
+  document.getElementById('texto-progresso').textContent = '(' + feitas + '/' + total + ' - ' + Math.round(feitas/total*100) + '%)';
+}
+function limparRespostas() {
+  if (!confirm('Limpar todas as respostas?')) return;
+  fetch('{{ url_for("limpar") }}', { method: 'POST' })
+  .then(r => r.json())
+  .then(() => {
+    document.querySelectorAll('.alternativa.selecionada').forEach(l => l.classList.remove('selecionada'));
+    document.querySelectorAll('input[type="radio"]').forEach(r => { r.checked = false; r.dataset.prev = 'false'; });
+    document.querySelectorAll('.feedback').forEach(fb => fb.innerHTML = '');
+    atualizarProgresso();
+  });
+}
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.questao').forEach(q => {
+    q.querySelectorAll('input[type="radio"]').forEach(r => {
+      r.dataset.prev = r.checked ? 'true' : 'false';
+    });
+  });
+  atualizarProgresso();
+});
+</script>
+</body>
+</html>

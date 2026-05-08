@@ -1,50 +1,70 @@
-# Prova Interativa Cisco/Mikrotik/Linux (JSON)
+# Quiz Interativo — Cisco / Mikrotik / Linux
 
-Resumo
-- Prova interativa em HTML que carrega questões a partir de provas.json (via JSON).
-- 100 questões totais (34 Cisco + 33 Mikrotik + 33 Linux).
-- Front-end dinâmico: mostra explicação ao selecionar, navega entre perguntas e gera relatório de desempenho por tema.
+Site de quiz com 100 questões de TI (Cisco, Mikrotik e Linux), autenticação de usuário, persistência de respostas e relatório de desempenho.
 
-Arquivos Principais
-- index.html: página que carrega questões via JSON.
-- provas.json: banco com as 100 questões.
-- Dockerfile / docker-compose.yml: configuração Docker com Nginx.
-- .dockerignore: arquivos ignorados no build.
+## Funcionalidades
 
-Estrutura de Perguntas (JSON)
-- id: identificador da pergunta.
-- enunciado: texto da questão.
-- alts: array com 5 alternativas (A–E).
-- correta: índice da alternativa correta (0-4).
-- explicacao: explicação da resposta.
-- tema: categoria (cisco, mikrotik, linux).
+- Login e cadastro de usuário
+- 100 questões divididas em 3 temas
+- Respostas persistem mesmo ao navegar entre questões
+- Relatório individual com acertos e erros
+- Explicação detalhada para cada questão
+- Tema AMOLED black
+- Botão para limpar todas as respostas
 
-Como Executar Localmente
+## Tecnologias
 
-## Sem Servidor (teste rápido)
+- **Backend:** Python + Flask
+- **Banco:** SQLite
+- **Frontend:** HTML, CSS, JavaScript (Jinja2 templates)
+- **Docker:** Dockerfile + docker-compose
+
+## Como Executar
+
+### Local (sem Docker)
+
 ```bash
-python -m http.server 8000
-```
-Acesse: http://localhost:8000
-
-## Com Docker (recomendado)
-```bash
-docker-compose up -d
-```
-Acesse: http://localhost:8080
-
-## Com Flask (opcional)
-```bash
+pip install -r requirements.txt
 python app.py
 ```
+
 Acesse: http://localhost:5000
 
-Docker
-- Build: `docker build -t provas-prova:latest .`
-- Run: `docker run -d -p 8080:80 provas-prova:latest`
-- Compose: `docker-compose up -d`
+### Com Docker
 
-Notas
-- O JSON contém 100 questões válidas prontas para uso.
-- A arsitea com JSON permite fácil atualização de conteúdo sem mexer no frontend.
-- Para adicionar novas questões, edite provas.json mantendo a mesma estrutura.
+```bash
+docker compose up -d
+```
+
+Acesse: http://localhost:5000
+
+## Estrutura do Projeto
+
+```
+├── app.py              # Servidor Flask
+├── database.py         # Modelos e acesso ao SQLite
+├── provas.json         # Banco de 100 questões
+├── requirements.txt    # Dependências Python
+├── Dockerfile          # Imagem Docker
+├── docker-compose.yml  # Orquestração Docker
+├── templates/          # Templates HTML (Jinja2)
+│   ├── login.html
+│   ├── cadastro.html
+│   ├── quiz.html
+│   └── relatorio.html
+└── static/
+    └── style.css       # Estilo AMOLED black
+```
+
+## Estrutura das Questões (JSON)
+
+```json
+{
+  "id": 1,
+  "enunciado": "texto da pergunta",
+  "alts": ["alt A", "alt B", "alt C", "alt D", "alt E"],
+  "correta": 1,
+  "explicacao": "explicação da resposta",
+  "tema": "cisco"
+}
+```

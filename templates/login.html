@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - Quiz Concurso</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <h1>Quiz Concurso</h1>
+    {% if erro %}
+    <div class="erro">{{ erro }}</div>
+    {% endif %}
+    <form method="POST">
+      <input type="text" name="username" placeholder="Usuário" required>
+      <input type="password" name="password" placeholder="Senha" required>
+      <button type="submit">Entrar</button>
+    </form>
+    <p class="link">Não tem conta? <a href="{{ url_for('cadastro') }}">Cadastre-se</a></p>
+  </div>
+</div>
+</body>
+</html>

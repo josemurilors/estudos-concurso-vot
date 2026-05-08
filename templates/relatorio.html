@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatório - {{ username }}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Relatório</h1>
+    <div class="user-info">
+      <span>{{ username }}</span>
+      <a href="{{ url_for('quiz') }}" class="btn">Voltar ao Quiz</a>
+      <a href="{{ url_for('logout') }}" class="btn">Sair</a>
+    </div>
+  </div>
+  <div class="card resumo">
+    <h2>Desempenho</h2>
+    <p>Acertos: <strong>{{ acertos }}</strong> de <strong>{{ total }}</strong>
+       ({% if total > 0 %}{{ (acertos / total * 100) | int }}{% else %}0{% endif %}%)</p>
+  </div>
+  <div id="relatorio">
+    {% for item in questoes %}
+    <div class="questao {% if item['acertou'] %}correta{% else %}errada{% endif %}">
+      <div class="enunciado">{{ item['questao']['id'] }}. {{ item['questao']['enunciado'] }}</div>
+      <div class="alternativas">
+        {% for i in range(item['questao']['alts']|length) %}
+        <div class="alternativa
+          {% if i == item['resposta_escolhida'] %}selecionada{% endif %}
+          {% if i == item['questao']['correta'] %}correta{% endif %}">
+          {{ item['questao']['alts'][i] }}
+          {% if i == item['questao']['correta'] %}<span class="marca-correto">✓</span>{% endif %}
+          {% if i == item['resposta_escolhida'] and i != item['questao']['correta'] %}<span class="marca-errado">✗</span>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <div class="feedback">
+        {% if item['acertou'] %}
+        <span class="correto">Correto!</span>
+        {% else %}
+        <span class="incorreto">Errado! Resposta correta: {{ item['questao']['correta'] + 1 }}</span>
+        {% endif %}
+        <div class="explicacao">{{ item['questao']['explicacao'] }}</div>
+      </div>
+    </div>
+    {% else %}
+    <p class="vazio">Nenhuma questão respondida ainda. <a href="{{ url_for('quiz') }}">Ir para o quiz</a></p>
+    {% endfor %}
+  </div>
+</div>
+</body>
+</html>
